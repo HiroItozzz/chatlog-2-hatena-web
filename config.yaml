@@ -1,0 +1,33 @@
+# 設定
+ai:
+  prompt: |
+    以下は対話型AIとのやり取りです。この会話から学んだことを、個人ブログ用の学習記録として整理してください。
+
+    要件：
+    - タイトル：要点だけを簡潔に
+    - 本文：Markdown形式、1000字以内
+    - 口調：「だ・である」調だけど硬くない、自然な感じ
+    - 構成：学んだポイントや実践内容を箇条書きも使ってまとめる
+    - 読者：未来の自分（復習用）
+    - 厳守事項：機密情報や個人特定につながる情報は漏らさないでください
+
+    会話ログ：
+  model: "gemini-2.5-flash" # "gemini-2.5-flash", "gemini-2.5-pro", "deepseek-chat" or "deepseek-reasoner"
+  temperature: 1.2 # 生成ごとの揺れ
+  max_len_content: 1500 # （未実装）Geminiが返すはてなブログ本文の最大文字数
+
+blog:
+  preset_category:
+    - 自動投稿
+    - AtomPub
+
+# ディレクトリ指定
+paths:
+  input_dir: "sample"
+  output_dir: "outputs"
+
+google_sheets:
+  spreadsheet_name: record
+
+other:
+  debug: f
