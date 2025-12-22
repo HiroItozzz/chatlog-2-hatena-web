@@ -1,0 +1,18 @@
+<html>
+  <head>
+    <title>ブログ自動投稿</title>
+  </head>
+  <body>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+      <!-- ファイルアップロード -->
+      <input type="file" name="file" required />
+
+      <!-- リスト形式のフォームデータ -->
+      <input type="text" name="preset_categories" placeholder="カテゴリ1" />
+      <input type="text" name="preset_categories" placeholder="カテゴリ2" />
+      <input type="text" name="preset_categories" placeholder="カテゴリ3" />
+
+      <button type="submit">投稿</button>
+    </form>
+  </body>
+</html>
