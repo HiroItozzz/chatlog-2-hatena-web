@@ -72,12 +72,14 @@ def xml_unparser(
     return ET.tostring(ROOT, encoding="unicode")
 
 
-async def hatena_oauth(xml_str: str, hatena_secret_keys: dict) -> dict:
+async def hatena_oauth(xml_str: str, hatena_secret_keys: dict) -> httpx.Response:
     """はてなブログへ投稿"""
 
     URL = hatena_secret_keys.pop("hatena_entry_url")
-    async with AsyncOAuth1Client(**hatena_secret_keys,force_include_body=True) as oauth:
-        response = await oauth.post(URL,content=xml_str.encode("utf-8"), headers={"Content-Type": "application/xml; charset=utf-8"})
+    async with AsyncOAuth1Client(**hatena_secret_keys, force_include_body=True) as oauth:
+        response = await oauth.post(
+            URL, content=xml_str.encode("utf-8"), headers={"Content-Type": "application/xml; charset=utf-8"}
+        )
 
         logger.debug(f"Status: {response.status_code}")
         if response.status_code == 201:
