@@ -9,7 +9,7 @@ services:                           # サービスを定義しますという決
     volumes:                        # マウントするファイルを指定する
       - ./:/app           # WindowsのCD → コンテナの/app　の常時同期設定（双方向的）　Dockerfileの COPY . .（Windowsからのコピー）を無効化（同期設定により置換）
       - /app/.venv                  # .venvを同期から除外
-    command: uv run uvicorn api:app --host 0.0.0.0 --port 8080 --reload # DockerfileのCMDを完全上書き
+    command: uv run uvicorn web:app --host 0.0.0.0 --port 8080 --reload # DockerfileのCMDを完全上書き
     environment:
       - DEEPSEEK_API_KEY
       - HATENA_ACCESS_TOKEN

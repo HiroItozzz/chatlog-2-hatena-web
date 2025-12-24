@@ -5,6 +5,8 @@ from fastapi import APIRouter, File, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import ValidationError
+import httpx
+from authlib.integrations.httpx_client import AsyncOAuth1Client
 
 from cha2hatena import DeepseekClient, LlmConfig, blog_post
 
@@ -42,13 +44,13 @@ async def post(file: UploadFile = File(), preset_categories: list[str] = Form([]
     preset_cats = preset_categories
     
     hatena_secret_keys = {
-    "client_key": os.environ.get("HATENA_CONSUMER_KEY"),
+    "client_id": os.environ.get("HATENA_CONSUMER_KEY"),
     "client_secret": os.environ.get("HATENA_CONSUMER_SECRET"),
-    "resource_owner_key": os.environ.get("HATENA_ACCESS_TOKEN"),
-    "resource_owner_secret": os.environ.get("HATENA_ACCESS_TOKEN_SECRET"),
+    "token": os.environ.get("HATENA_ACCESS_TOKEN"),
+    "token_secret": os.environ.get("HATENA_ACCESS_TOKEN_SECRET"),
     "hatena_entry_url": os.getenv("HATENA_ENTRY_URL")}
 
-    hatena_response = blog_post(
+    hatena_response = await blog_post(
         **llm_outputs, hatena_secret_keys=hatena_secret_keys, preset_categories=preset_cats, is_draft=False
     )
     return hatena_response
