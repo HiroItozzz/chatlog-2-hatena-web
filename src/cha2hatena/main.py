@@ -46,32 +46,31 @@ def append_csv(path: Path, data: dict):
     """pathがなければ作成し、CSVに1行追記"""
     # ファイルを開く前に状態を確定させる（正しい）
     is_new_file = not path.exists() or path.stat().st_size == 0
-    
+
     try:
         with path.open("a", newline="", encoding="utf-8-sig") as f:
             writer = csv.DictWriter(f, fieldnames=data.keys())
             if is_new_file:
                 writer.writeheader()  # 新規または空の時のみ列名を追加
             writer.writerow(data)
-            
+
         if is_new_file:
             logger.warning(f"新しいCSVファイルを作成しました: {path}")
         else:
-            logger.warning(f"CSVにデータを追記しました: {path.name}")    
+            logger.warning(f"CSVにデータを追記しました: {path.name}")
     except Exception:
         logger.exception("CSVファイルへの書き込み中にエラーが発生しました。")
-        
 
 
 def to_spreadsheet(new_data: dict, spreadsheet_name: str) -> None:
-    SCOPES = ["https://www.googleapis.com/auth/spreadsheets","https://www.googleapis.com/auth/drive"]
+    SCOPES = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
     if spreadsheet_name:
         gc = gspread.oauth(scopes=SCOPES, credentials_filename="credentials.json")
         try:
             # スプレッドシートを開く（存在チェック）
             sh = gc.open(spreadsheet_name)
             worksheet = sh.sheet1
-            
+
             existing_data = worksheet.get_all_values()
             if not existing_data:
                 worksheet.update([list(new_data.keys())] + [list(new_data.values())])

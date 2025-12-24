@@ -1,10 +1,16 @@
+import logging
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from pathlib import Path
 
-app = FastAPI()
+from web.config import DEBUG
+
+logger = logging.getLogger()
+
+app = FastAPI(debug=DEBUG, docs_url="/docs" if DEBUG else None, redoc_url="/redocs" if DEBUG else None)
 
 # web/__init__.py があるディレクトリの絶対パスを取得
 current_dir = Path(__file__).parent

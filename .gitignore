@@ -18,7 +18,6 @@ requirements.ini
 dist/
 build/
 temp/
-.vscode/
 .ipynb_checkpoints/
 
 # Byte-compiled / optimized / DLL files

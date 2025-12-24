@@ -1,3 +1,4 @@
+import logging
 import os
 
 import yaml
@@ -5,12 +6,10 @@ from fastapi import APIRouter, File, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import ValidationError
-import logging
 
 from cha2hatena import DeepseekClient, LlmConfig, blog_post
 from cha2hatena.llm.llm_stats import TokenStats
-
-DEBUG = True
+from web.config import DEBUG
 
 logger = logging.getLogger(__name__)
 
@@ -21,11 +20,6 @@ with open("config.yaml", encoding="utf-8") as f:
 
 
 templates = Jinja2Templates(directory="web/templates")
-
-# @views.get("/")
-# async def root():
-#     return {"message": "Hello World"}
-
 
 async def _generate_summary(file: UploadFile) -> tuple[dict, TokenStats]:
     """共通のLLM要約処理"""
