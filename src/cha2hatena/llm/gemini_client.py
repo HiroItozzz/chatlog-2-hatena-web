@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 class GeminiClient(ConversationalAi):
-    def get_summary(self):
+    async def get_summary(self):
         from google import genai
         from google.genai import types
         from google.genai.errors import ClientError, ServerError
@@ -22,7 +22,7 @@ class GeminiClient(ConversationalAi):
         for i in range(max_retries):
             # generate_contentメソッドは内部的にHTTPレスポンスコード200以外の場合は例外を発生させる
             try:
-                response = client.models.generate_content(  # リクエスト
+                response = await client.aio.models.generate_content(  # リクエスト
                     model=self.model,
                     contents=self.prompt,
                     config=types.GenerateContentConfig(
@@ -34,7 +34,7 @@ class GeminiClient(ConversationalAi):
                 print("Geminiによる要約を受け取りました。")
                 break
             except ServerError:
-                super().handle_server_error(i, max_retries)
+                await super().handle_server_error(i, max_retries)
             except ClientError as e:
                 super().handle_client_error(e)
             except Exception as e:

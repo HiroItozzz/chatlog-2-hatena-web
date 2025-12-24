@@ -88,7 +88,7 @@ def to_spreadsheet(new_data: dict, spreadsheet_name: str) -> None:
             print(f"新規スプレッドシートを作成し、データを追加しました: {spreadsheet_name}")
 
 
-def main():
+async def main():
     try:
         logger.debug("================================================")
         logger.debug(f"アプリケーションが起動しました。デバッグモード：{DEBUG}")
@@ -109,7 +109,7 @@ def main():
         ai_instance: ConversationalAi = create_ai_client(LLM_CONFIG)
 
         # AIで要約取得
-        llm_outputs, llm_stats = ai_instance.get_summary()
+        llm_outputs, llm_stats = await ai_instance.get_summary()
 
         # はてなブログへ投稿 投稿結果を辞書型で返却
         blogpost_result = hatenablog_poster.blog_post(

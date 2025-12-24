@@ -7,8 +7,8 @@ logger = logging.getLogger(__name__)
 
 
 class DeepseekClient(ConversationalAi):
-    def get_summary(self) -> tuple[dict, TokenStats]:
-        from openai import OpenAI
+    async def get_summary(self) -> tuple[dict, TokenStats]:
+        from openai import AsyncOpenAI
 
         statement = f"次の行から示すプロンプトはこのPydanticモデルに合うJSONで出力してください: {BlogPost.model_json_schema()}\n"
         self.prompt = statement + self.prompt
@@ -16,12 +16,12 @@ class DeepseekClient(ConversationalAi):
         logger.warning("Deepseekからの応答を待っています。")
         logger.debug(f"APIリクエスト中。APIキー: ...{self.api_key[-5:]}")
 
-        client = OpenAI(api_key=self.api_key, base_url="https://api.deepseek.com")
+        client = AsyncOpenAI(api_key=self.api_key, base_url="https://api.deepseek.com")
 
         max_retries = 3
         for i in range(max_retries):
             try:
-                response = client.chat.completions.create(
+                response = await client.chat.completions.create(
                     model=self.model,
                     temperature=self.temperature,
                     messages=[{"role": "user", "content": self.prompt}],
@@ -32,7 +32,7 @@ class DeepseekClient(ConversationalAi):
             except Exception as e:
                 # https://api-docs.deepseek.com/quick_start/error_codes
                 if any(code in str(e) for code in [500, 502, 503]):
-                    super().handle_server_error(i, max_retries)
+                    await super().handle_server_error(i, max_retries)
                 elif "429" in str(e):
                     logger.error("APIレート制限。しばらく経ってから再実行してください。")
                     raise

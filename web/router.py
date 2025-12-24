@@ -36,7 +36,7 @@ async def post(file: UploadFile = File(), preset_categories: list[str] = Form([]
         conversation=conversation,
     )
 
-    llm_outputs, llm_stats = DeepseekClient(config).get_summary()
+    llm_outputs, llm_stats = await DeepseekClient(config).get_summary()
 
     import json
     preset_cats = preset_categories
