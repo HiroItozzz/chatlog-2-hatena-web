@@ -2,6 +2,7 @@ import json
 import logging
 import sys
 import time
+import asyncio
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import List
@@ -43,13 +44,13 @@ class ConversationalAi(ABC):
         self.prompt = config.prompt + STATEMENT + "\n\n" + config.conversation
 
     @abstractmethod
-    def get_summary(self) -> tuple[dict, TokenStats]:
+    async def get_summary(self) -> tuple[dict, TokenStats]:
         pass
 
-    def handle_server_error(self, i, max_retries):
+    async def handle_server_error(self, i, max_retries):
         if i < max_retries - 1:
             logger.warning(f"{self.company_name}の計算資源が逼迫しているようです。{5 * (i + 1)}秒後にリトライします。")
-            time.sleep(5 * (i + 1))
+            await asyncio.sleep(5 * (i + 1))
         else:
             logger.warning(f"{self.company_name}は現在過負荷のようです。少し時間をおいて再実行する必要があります。")
             logger.warning("実行を中止します。")

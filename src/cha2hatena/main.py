@@ -46,32 +46,31 @@ def append_csv(path: Path, data: dict):
     """pathがなければ作成し、CSVに1行追記"""
     # ファイルを開く前に状態を確定させる（正しい）
     is_new_file = not path.exists() or path.stat().st_size == 0
-    
+
     try:
         with path.open("a", newline="", encoding="utf-8-sig") as f:
             writer = csv.DictWriter(f, fieldnames=data.keys())
             if is_new_file:
                 writer.writeheader()  # 新規または空の時のみ列名を追加
             writer.writerow(data)
-            
+
         if is_new_file:
             logger.warning(f"新しいCSVファイルを作成しました: {path}")
         else:
-            logger.warning(f"CSVにデータを追記しました: {path.name}")    
+            logger.warning(f"CSVにデータを追記しました: {path.name}")
     except Exception:
         logger.exception("CSVファイルへの書き込み中にエラーが発生しました。")
-        
 
 
 def to_spreadsheet(new_data: dict, spreadsheet_name: str) -> None:
-    SCOPES = ["https://www.googleapis.com/auth/spreadsheets","https://www.googleapis.com/auth/drive"]
+    SCOPES = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
     if spreadsheet_name:
         gc = gspread.oauth(scopes=SCOPES, credentials_filename="credentials.json")
         try:
             # スプレッドシートを開く（存在チェック）
             sh = gc.open(spreadsheet_name)
             worksheet = sh.sheet1
-            
+
             existing_data = worksheet.get_all_values()
             if not existing_data:
                 worksheet.update([list(new_data.keys())] + [list(new_data.values())])
@@ -88,7 +87,7 @@ def to_spreadsheet(new_data: dict, spreadsheet_name: str) -> None:
             print(f"新規スプレッドシートを作成し、データを追加しました: {spreadsheet_name}")
 
 
-def main():
+async def main():
     try:
         logger.debug("================================================")
         logger.debug(f"アプリケーションが起動しました。デバッグモード：{DEBUG}")
@@ -109,7 +108,7 @@ def main():
         ai_instance: ConversationalAi = create_ai_client(LLM_CONFIG)
 
         # AIで要約取得
-        llm_outputs, llm_stats = ai_instance.get_summary()
+        llm_outputs, llm_stats = await ai_instance.get_summary()
 
         # はてなブログへ投稿 投稿結果を辞書型で返却
         blogpost_result = hatenablog_poster.blog_post(

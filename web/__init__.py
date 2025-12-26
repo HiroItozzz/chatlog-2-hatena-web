@@ -1,19 +1,19 @@
-from fastapi import FastAPI
-from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from pathlib import Path
+import logging
+from logging.handlers import RotatingFileHandler
+import sys
 
-app = FastAPI()
+from web.main import app
 
-# web/__init__.py があるディレクトリの絶対パスを取得
-current_dir = Path(__file__).parent
-static_dir = current_dir / "static"
+logger = logging.getLogger(__name__)
 
-app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
-templates = Jinja2Templates(directory="templates")
+parent = logging.getLogger("web")
+parent.setLevel(logging.DEBUG)
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setFormatter(logging.Formatter("%(level_name)s | %(name)s:%(funcname)s:%(lineno)s | %(massage)s"))
+console_handler.setLevel(logging.WARNING)
+parent.addHandler(console_handler)
 
-
-from web.router import views
-
-app.include_router(views)
+file_hanlder = RotatingFileHandler(filename="app.log", maxBytes=1*1024*1024, backupCount=2, encoding="utf-8")
+file_hanlder.setFormatter(logging.Formatter("%(asctime)s:%(level_name)s | %(name)s:%(funcname)s:%(lineno)s | %(massage)s "))
+file_hanlder.setLevel(logging.DEBUG)
+parent.addHandler(file_hanlder)

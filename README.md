@@ -1,5 +1,7 @@
 # chatlog-2-hatena
 
+## web版chatlog-2-hatena（開発中）
+- https://github.com/HiroItozzz/chatlog-2-hatena  
 
 AIとの会話が保存された特定の形式のJSONファイルを解析・要約。
 その内容をはてなブログへ自動投稿するためのツール。  

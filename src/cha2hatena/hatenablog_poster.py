@@ -3,6 +3,8 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
+import httpx
+from authlib.integrations.httpx_client import AsyncOAuth1Client
 from requests import Response
 from requests_oauthlib import OAuth1Session
 
@@ -70,18 +72,20 @@ def xml_unparser(
     return ET.tostring(ROOT, encoding="unicode")
 
 
-def hatena_oauth(xml_str: str, hatena_secret_keys: dict) -> dict:
+async def hatena_oauth(xml_str: str, hatena_secret_keys: dict) -> httpx.Response:
     """はてなブログへ投稿"""
 
     URL = hatena_secret_keys.pop("hatena_entry_url")
-    oauth = OAuth1Session(**hatena_secret_keys)
-    response = oauth.post(URL, data=xml_str, headers={"Content-Type": "application/xml; charset=utf-8"})
+    async with AsyncOAuth1Client(**hatena_secret_keys, force_include_body=True) as oauth:
+        response = await oauth.post(
+            URL, content=xml_str.encode("utf-8"), headers={"Content-Type": "application/xml; charset=utf-8"}
+        )
 
-    logger.debug(f"Status: {response.status_code}")
-    if response.status_code == 201:
-        logger.warning("✓ はてなブログへ投稿成功")
-    else:
-        logger.error("✗ リクエスト中にエラー発生。はてなブログへ投稿できませんでした。")
+        logger.debug(f"Status: {response.status_code}")
+        if response.status_code == 201:
+            logger.warning("✓ はてなブログへ投稿成功")
+        else:
+            logger.error("✗ リクエスト中にエラー発生。はてなブログへ投稿できませんでした。")
     return response
 
 
@@ -118,7 +122,7 @@ def parse_response(response: Response) -> dict[str, Any]:
     return response_dict
 
 
-def blog_post(
+async def blog_post(
     title: str,
     content: str,
     categories: list,
@@ -129,6 +133,6 @@ def blog_post(
     is_draft: bool = False,
 ) -> dict:
     xml_entry = xml_unparser(title, content, categories, preset_categories, author, updated, is_draft)
-    res = hatena_oauth(xml_entry, hatena_secret_keys)
+    res = await hatena_oauth(xml_entry, hatena_secret_keys)
 
     return parse_response(res)

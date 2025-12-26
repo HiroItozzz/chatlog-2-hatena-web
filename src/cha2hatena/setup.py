@@ -71,10 +71,10 @@ def config_setup() -> tuple[dict, dict]:
 
     secret_keys = {
         "API_KEY": api_key,
-        "client_key": os.getenv("HATENA_CONSUMER_KEY", ""),
+        "client_id": os.getenv("HATENA_CONSUMER_KEY", ""),
         "client_secret": os.getenv("HATENA_CONSUMER_SECRET", ""),
-        "resource_owner_key": os.getenv("HATENA_ACCESS_TOKEN", ""),
-        "resource_owner_secret": os.getenv("HATENA_ACCESS_TOKEN_SECRET", ""),
+        "token": os.getenv("HATENA_ACCESS_TOKEN", ""),
+        "token_secret": os.getenv("HATENA_ACCESS_TOKEN_SECRET", ""),
         "hatena_entry_url": os.getenv("HATENA_ENTRY_URL", ""),
         "LINE_CHANNEL_ACCESS_TOKEN": os.getenv("LINE_CHANNEL_ACCESS_TOKEN", ""),
     }
