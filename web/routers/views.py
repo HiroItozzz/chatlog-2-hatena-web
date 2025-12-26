@@ -13,13 +13,14 @@ from web.config import DEBUG
 
 logger = logging.getLogger(__name__)
 
-views = APIRouter()
+router = APIRouter()
 
 with open("config.yaml", encoding="utf-8") as f:
     config_dict = yaml.safe_load(f)
 
 
 templates = Jinja2Templates(directory="web/templates")
+
 
 async def _generate_summary(file: UploadFile) -> tuple[dict, TokenStats]:
     """共通のLLM要約処理"""
@@ -48,13 +49,13 @@ async def _post_to_blog(llm_outputs: dict, preset_categories: list[str], is_draf
     )
 
 
-@views.get("/", response_class=HTMLResponse)
+@router.get("/", response_class=HTMLResponse)
 async def read_item(request: Request):
     # templates/top.html を読み込んで返す
     return templates.TemplateResponse("top.html", {"request": request})
 
 
-@views.post("/")
+@router.post("/")
 async def generate(file: UploadFile = File(), preset_categories: list[str] = Form([])):
     llm_outputs, llm_stats = await _generate_summary(file)
 
