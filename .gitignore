@@ -1,7 +1,7 @@
 credentials/
 credentials.json
 token.json
-practice_html/
+my_practice/
 
 .venv*
 __pycache__/

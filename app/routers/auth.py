@@ -14,8 +14,8 @@ from jwt.exceptions import InvalidTokenError
 from pwdlib import PasswordHash
 from pydantic import BaseModel, ValidationError
 
-from web.config import DEBUG
-from web.models.users import fake_users_db
+from app.config import DEBUG
+from app.models.users import fake_users_db
 
 logger = logging.getLogger(__name__)
 

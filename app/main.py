@@ -6,13 +6,13 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from web.config import DEBUG
+from app.config import DEBUG
 
 logger = logging.getLogger()
 
 app = FastAPI(debug=DEBUG, docs_url="/docs" if DEBUG else None, redoc_url="/redocs" if DEBUG else None)
 
-# web/__init__.py があるディレクトリの絶対パスを取得
+# app/__init__.py があるディレクトリの絶対パスを取得
 current_dir = Path(__file__).parent
 static_dir = current_dir / "static"
 
@@ -20,7 +20,7 @@ app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 templates = Jinja2Templates(directory="templates")
 
 
-from web.routers import auth, views
+from app.routers import auth, views
 
 app.include_router(views.router)
 app.include_router(auth.router)

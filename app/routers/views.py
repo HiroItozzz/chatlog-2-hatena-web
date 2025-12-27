@@ -9,7 +9,7 @@ from pydantic import ValidationError
 
 from cha2hatena import DeepseekClient, LlmConfig, blog_post
 from cha2hatena.llm.llm_stats import TokenStats
-from web.config import DEBUG
+from app.config import DEBUG
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ with open("config.yaml", encoding="utf-8") as f:
     config_dict = yaml.safe_load(f)
 
 
-templates = Jinja2Templates(directory="web/templates")
+templates = Jinja2Templates(directory="app/templates")
 
 
 async def _generate_summary(file: UploadFile) -> tuple[dict, TokenStats]:

@@ -5,7 +5,7 @@ import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 
 from cha2hatena.llm.llm_stats import TokenStats
-from web import app  # FastAPIアプリをインポート
+from app import app  # FastAPIアプリをインポート
 
 
 @pytest_asyncio.fixture
