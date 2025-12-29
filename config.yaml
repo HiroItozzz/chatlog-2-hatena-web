@@ -30,4 +30,4 @@ google_sheets:
   spreadsheet_name: record
 
 other:
-  debug: f
+  debug: t

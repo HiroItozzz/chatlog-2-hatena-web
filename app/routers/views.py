@@ -7,9 +7,9 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import ValidationError
 
-from cha2hatena import DeepseekClient, LlmConfig, blog_post
-from cha2hatena.llm.llm_stats import TokenStats
 from app.config import DEBUG
+from cha2hatena import DeepseekClient, LlmConfig, blog_post, json_loader
+from cha2hatena.llm.llm_stats import TokenStats
 
 logger = logging.getLogger(__name__)
 
@@ -22,9 +22,8 @@ with open("config.yaml", encoding="utf-8") as f:
 templates = Jinja2Templates(directory="app/templates")
 
 
-async def _generate_summary(file: UploadFile) -> tuple[dict, TokenStats]:
+async def _generate_summary(conversation: str) -> tuple[dict, TokenStats]:
     """共通のLLM要約処理"""
-    conversation = (await file.read()).decode("utf-8")
     config = LlmConfig(
         prompt=config_dict["ai"]["prompt"],
         model=config_dict["ai"]["model"],
@@ -56,8 +55,9 @@ async def read_item(request: Request):
 
 
 @router.post("/")
-async def generate(file: UploadFile = File(), preset_categories: list[str] = Form([])):
-    llm_outputs, llm_stats = await _generate_summary(file)
+async def generate(files: list[UploadFile] = File(), preset_categories: list[str] = Form([])):
+    single_log_text = await json_loader(files)
+    llm_outputs, llm_stats = await _generate_summary(single_log_text)
 
     hatena_response = await _post_to_blog(llm_outputs, preset_categories=preset_categories, is_draft=DEBUG)
     return hatena_response
