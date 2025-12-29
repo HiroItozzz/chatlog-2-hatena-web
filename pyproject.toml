@@ -14,6 +14,7 @@ dependencies = [
     "openai>=2.14.0",
     "pwdlib[argon2]>=0.3.0",
     "pydantic>=2.12.5",
+    "pydantic-settings>=2.12.0",
     "pyjwt>=2.10.1",
     "python-dotenv>=1.2.1",
     "python-multipart>=0.0.21",
