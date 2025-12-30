@@ -8,7 +8,7 @@ from fastapi.templating import Jinja2Templates
 
 from app.config import DEBUG
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 app = FastAPI(debug=DEBUG, docs_url="/docs" if DEBUG else None, redoc_url="/redocs" if DEBUG else None)
 
@@ -34,7 +34,8 @@ async def force_https_redirect(request: Request, call_next):
     return await call_next(request)
 
 
-from app.routers import auth, views
+from app.routers import auth, users, views
 
 app.include_router(views.router)
 app.include_router(auth.router)
+app.include_router(users.router)

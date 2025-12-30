@@ -50,11 +50,13 @@ def get_env_settings() -> SettingsEnv:
 
 # Dependsに投入するためのラッパー関数
 @lru_cache()
-def get_yaml_settings() -> SettingsAi:
+def get_ai_settings() -> SettingsAi:
     return SettingsAi.from_yaml()
 
 
-def get_llm_config(env_settings=Depends(get_env_settings), yaml_config=Depends(get_yaml_settings)) -> LlmConfig:
+def get_llm_config(
+    env_settings: SettingsEnv = Depends(get_env_settings), yaml_config: SettingsAi = Depends(get_ai_settings)
+) -> LlmConfig:
     config = LlmConfig(
         prompt=yaml_config.prompt,
         model=yaml_config.model,
