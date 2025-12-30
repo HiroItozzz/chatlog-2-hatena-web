@@ -1,6 +1,7 @@
 import logging
 from functools import lru_cache
 from pathlib import Path
+from typing import Annotated
 
 import yaml
 from fastapi import Depends
@@ -14,6 +15,9 @@ DEBUG = True
 
 
 class SettingsEnv(BaseSettings):
+    """環境変数取得"""
+
+    # 外部APIキー
     deepseek_api_key: str
     hatena_consumer_key: str
     hatena_consumer_secret: str
@@ -22,11 +26,18 @@ class SettingsEnv(BaseSettings):
     hatena_entry_url: str
     spreadsheet_id: str
 
+    # セキュリティ設定
+    jwt_secret_key: str
+    algorithm: str = "HS256"
+    access_token_expire_minutes: int = 30
+
     class Config:
         env_file = ".env"
 
 
 class SettingsAi(BaseSettings):
+    """AI設定"""
+
     prompt: str
     model: str = "deepseek-chat"
     temperature: float = 1.3
@@ -43,6 +54,14 @@ class SettingsAi(BaseSettings):
         return cls()
 
 
+class SettingsAuth(BaseSettings):
+    """セキュリティ設定"""
+
+    jwt_secret_key: str
+    algorithm: str = "HS256"
+    access_token_expire_minutes: int = 30
+
+
 @lru_cache()
 def get_env_settings() -> SettingsEnv:
     return SettingsEnv()
@@ -55,24 +74,34 @@ def get_ai_settings() -> SettingsAi:
 
 
 def get_llm_config(
-    env_settings: SettingsEnv = Depends(get_env_settings), yaml_config: SettingsAi = Depends(get_ai_settings)
+    env_config: Annotated[SettingsEnv, Depends(get_env_settings)],
+    yaml_config: Annotated[SettingsAi, Depends(get_ai_settings)],
 ) -> LlmConfig:
     config = LlmConfig(
         prompt=yaml_config.prompt,
         model=yaml_config.model,
         temperature=yaml_config.temperature,
-        api_key=env_settings.deepseek_api_key,
+        api_key=env_config.deepseek_api_key,
         conversation="",  # json_loaderの返り値をあとで代入
     )
     return config
 
 
-def get_hatena_secrets(secret_keys: SettingsEnv = Depends(get_env_settings)):
+def get_hatena_secrets(env_config: Annotated[SettingsEnv, Depends(get_env_settings)]):
     hatena_secret_keys = {
-        "client_id": secret_keys.hatena_consumer_key,
-        "client_secret": secret_keys.hatena_consumer_secret,
-        "token": secret_keys.hatena_access_token,
-        "token_secret": secret_keys.hatena_access_token_secret,
-        "hatena_entry_url": secret_keys.hatena_entry_url,
+        "client_id": env_config.hatena_consumer_key,
+        "client_secret": env_config.hatena_consumer_secret,
+        "token": env_config.hatena_access_token,
+        "token_secret": env_config.hatena_access_token_secret,
+        "hatena_entry_url": env_config.hatena_entry_url,
     }
     return hatena_secret_keys
+
+
+def get_auth_config(env_config: Annotated[SettingsEnv, Depends(get_env_settings)]) -> SettingsAuth:
+    auth_config = SettingsAuth(
+        jwt_secret_key=env_config.jwt_secret_key,
+        algorithm=env_config.algorithm,
+        access_token_expire_minutes=env_config.access_token_expire_minutes,
+    )
+    return auth_config

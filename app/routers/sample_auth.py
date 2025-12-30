@@ -14,7 +14,7 @@ from jwt.exceptions import InvalidTokenError
 from pwdlib import PasswordHash
 from pydantic import BaseModel, ValidationError
 
-from app import security
+from app.core import security
 from app.config import DEBUG
 from app.models.fake_users import fake_users_db
 

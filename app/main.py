@@ -39,3 +39,7 @@ from app.routers import auth, users, views
 app.include_router(views.router)
 app.include_router(auth.router)
 app.include_router(users.router)
+if DEBUG:
+    from app.routers import dev
+
+    app.include_router(dev.router)

@@ -1,23 +1,18 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+from sqlalchemy.orm import Session
 
-
-class Token(BaseModel):
-    """"""
-
-    access_token: str
-    token_type: str
+from app.core.user_crud import get_user_by_id
 
 
 class UserBase(BaseModel):
     """
-    ユーザアカウントスキーマの共通部分 /
-    TokenData取得用
+    ユーザアカウントスキーマの共通部分
     """
 
-    email: str
+    email: str = Field(min_length=2, max_length=255)
 
 
 class UserCreate(UserBase):
@@ -26,12 +21,27 @@ class UserCreate(UserBase):
     password: str = Field(min_length=8, max_length=100)
 
 
+class UserAuth(UserBase):
+    id: int
+    disabled: bool
+
+    model_config = ConfigDict(from_attributes=True)
+
+    @classmethod
+    def from_db_user(cls, user):
+        """
+        authenticate_user_by_emailでのユーザー情報取得用ユーティリティメソッド
+        """
+        return cls(id=user.id, email=user.email, disabled=user.disabled)
+
+
 class UserResponse(UserBase):
     """レスポンス用スキーマ"""
 
     id: int
     username: Optional[str] = None
     created_at: datetime
+    disabled: bool
 
     @field_validator("username")
     @classmethod
@@ -57,3 +67,11 @@ class UserViewAdmin(UserBase):
 
     created_at: datetime
     updated_at: datetime
+
+
+def get_user_for_response(id: int, db: Session) -> Optional[UserResponse]:
+    user = get_user_by_id(id, db)
+    if user is None:
+        return None
+    user_for_response = UserResponse.model_validate(user)
+    return user_for_response
