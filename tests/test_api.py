@@ -5,7 +5,13 @@ import pytest
 async def test_summarize_endpoint(client, mock_gemini_get_summary):
     """FastAPIエンドポイントのテスト"""
 
-    files = {"file": ("test.txt", open("sample/sample.txt", "rb"), "text/plain")}
+    # files = {"files":("test.txt", open("sample/ChatGPT-sample.json", "rb"), "text/plain"), }
+    files = {
+        "files": [
+            ("ChatGPT-sample.json", open("sample/ChatGPT-sample.json", "rb"), "text/plain"),
+            ("Claude-sample.json", open("sample/Claude-sample.json", "rb"), "text/plain"),
+        ]
+    }
     # URLパスを指定
     response = await client.post("/", files=files)
 

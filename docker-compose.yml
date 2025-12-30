@@ -1,16 +1,17 @@
 # docker-composeは開発用設定
 services:                           # サービスを定義しますという決まり文句
-  web:                              # webという名前でサービスを定義
+  app:                              # appという名前でサービスを定義
     build: .                        # Dockerfileを相対パスで指定しビルド
     container_name: chatlog-2-hatena-web  # コンテナ名
-    working_dir: /app               # コンテナ内の作業ディレクトリを指定
+    working_dir: /workspace               # コンテナ内の作業ディレクトリを指定
     ports:
       - "8080:8080"                 # Windowsのポート:コンテナ内のuvicornが待ち受けるポート
     volumes:                        # マウントするファイルを指定する
-      - ./:/app           # WindowsのCD → コンテナの/app　の常時同期設定（双方向的）　Dockerfileの COPY . .（Windowsからのコピー）を無効化（同期設定により置換）
-      - /app/.venv                  # .venvを同期から除外
-    command: uv run uvicorn web:app --host 0.0.0.0 --port 8080 --reload # DockerfileのCMDを完全上書き
+      - ./app:/workspace/app           # WindowsのCD → コンテナの/app　の常時同期設定（双方向的）　Dockerfileの COPY . .（Windowsからのコピー）を無効化（同期設定により置換）
+      - ./cha2hatena:/workspace/cha2hatena
+    command: uv run uvicorn app:app --host 0.0.0.0 --port 8080 --reload # DockerfileのCMDを完全上書き
     environment:
+      - DATABASE_URL=postgresql+psycopg://user:password@db:5432/cha2hatena_db
       - DEEPSEEK_API_KEY
       - HATENA_ACCESS_TOKEN
       - HATENA_ACCESS_TOKEN_SECRET
@@ -19,5 +20,19 @@ services:                           # サービスを定義しますという決
       - HATENA_ENTRY_URL
     # env_file:
     #   - .env
+    depends_on:
+      - db
 
-      
+  db:
+    image: postgres:18.1-alpine3.23
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=cha2hatena_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

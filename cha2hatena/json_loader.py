@@ -3,30 +3,39 @@ import logging
 from datetime import datetime, timedelta
 from pathlib import Path
 
+from fastapi import UploadFile
+
 logger = logging.getLogger(__name__)
 
 
 ### ユーティリティ関数
-def ai_names_from_paths(paths: list[Path]) -> list:
+def ai_names_from_paths(paths: list[Path | UploadFile]) -> list:
     """AIの名前のリストを取得"""
     AI_LIST = ["Claude", "Gemini", "ChatGPT"]
     ai_names = []
     for path in paths:
-        ai_name = next((ai for ai in AI_LIST if path.stem.startswith(ai + "-")), "Unknown_AI")
+        try:
+            filename = path.stem
+        except AttributeError:
+            filename = path.filename
+        except Exception:
+            filename = "Unknown_AI"
+        ai_name = next((ai for ai in AI_LIST if filename.startswith(ai + "-")), "Unknown_AI")
         ai_names.append(ai_name)
     return ai_names
 
 
-def get_conversation_titles(paths: list[Path], ai_names: list) -> list:
+def get_conversation_titles(paths: list[Path | UploadFile], ai_names: list) -> list:
     """インプットパスのリストをcsv出力用タイトルに処理"""
     titles = []
     for idx, (path, ai_name) in enumerate(zip(paths, ai_names), 1):
-        if path.stem.startswith(ai_name + "-"):
-            title = path.stem.replace(f"{ai_name}-", "", 1)
+        filename = path.stem if isinstance(path, Path) else path.filename
+        if filename.startswith(ai_name + "-"):
+            title = filename.replace(f"{ai_name}-", "", 1)
             title = f"[{idx}]{title[:10]}" if len(paths) >= 2 else title
             titles.append(title)
         else:
-            titles.append(path.stem)
+            titles.append(filename)
     return titles
 
 
@@ -75,7 +84,7 @@ def convert_to_str(messages: dict, ai_name: str) -> tuple[list, datetime | None]
     return logs, timestamp
 
 
-def json_loader(paths: list[Path,]) -> str:
+async def json_loader(paths: list[Path | UploadFile]) -> str:
     """複数のjsonファイルをstrに"""
 
     logger.warning(f"{len(paths)}個のjsonファイルの読み込みを開始します")
@@ -85,16 +94,16 @@ def json_loader(paths: list[Path,]) -> str:
 
     # ファイルごとのループ
     for idx, (path, ai_name) in enumerate(zip(paths, ai_names), 1):
-        logger.warning(f"{idx}個目のファイルを読み込みます: {path.name}")
+        filename = path.name if isinstance(path, Path) else path.filename
+        logger.warning(f"{idx}個目のファイルを読み込みます: {filename}")
 
-        if path.suffix == ".json":
-            try:
-                data = json.loads(path.read_text(encoding="utf-8"))
-                messages = data["messages"]
-            except KeyError as e:
-                raise KeyError(f"エラー： jsonファイルの構成を確認してください - {path}") from e
-            except json.JSONDecodeError as e:
-                raise ValueError(f"エラー：ファイル形式を確認してください - {path.name}") from e
+        if isinstance(path, Path):
+            raw_text = path.read_text(encoding="utf-8")
+        else:
+            raw_text = (await path.read()).decode("utf-8")
+        try:
+            data = json.loads(raw_text)
+            messages = data["messages"]
 
             # 会話の抽出→文字列へ
             try:
@@ -103,21 +112,18 @@ def json_loader(paths: list[Path,]) -> str:
                 raise KeyError(f"エラー： jsonファイルの構成を確認してください - {path}") from e
 
             if timestamp is None:
-                print(f"{path.name}の会話履歴に時刻情報がありません。すべての会話を取得しました。")
+                print(f"{filename}の会話履歴に時刻情報がありません。すべての会話を取得しました。")
 
             logs.append(f"{'=' * 20} {idx}個目の会話 {'=' * 20}\n\n")
             conversation = "\n".join(logs[::-1])  # 順番を戻す
-            logger.warning(f"{len(logs) - 1}件の発言を取得: {path.name}")
+            logger.warning(f"{len(logs) - 1}件の発言を取得: {filename}")
             print(f"{'=' * 25}最初のメッセージ{'=' * 25}\n{logs[-2][:100]}")
             print(f"{'=' * 25}最後のメッセージ{'=' * 25}\n{logs[0][:100]}")
             print("=" * 60)
 
-        elif path.suffix == ".txt":
+        except json.JSONDecodeError:
             conversation = f"{'=' * 20} {idx}個目の会話 {'=' * 20}\n\n"
             conversation += path.read_text(encoding="utf-8")
-
-        else:
-            raise ValueError(f"エラー：対応していないファイル形式です - {path.name}")
 
         conversations.append(conversation)
         ai_names.append(ai_name)
