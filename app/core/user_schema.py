@@ -16,7 +16,11 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
-    """ユーザアカウント作成時のリクエスト用"""
+    """
+    ユーザアカウント作成時のリクエスト用
+    email: str
+    password: str
+    """
 
     password: str = Field(min_length=8, max_length=100)
 

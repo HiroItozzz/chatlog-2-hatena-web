@@ -7,9 +7,10 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from app.config import SettingsAuth, get_auth_config
-from app.core import user_crud, user_schema
+from app.core import security, user_crud, user_schema
 from app.core.security import Token, authenticate_user_by_email, create_access_token, create_user
 from app.database import get_db
+from app.models import users
 
 logger = logging.getLogger(__name__)
 
@@ -51,17 +52,24 @@ def login_for_access_token(
     auth_config: Annotated[SettingsAuth, Depends(get_auth_config)],
     db: Annotated[Session, Depends(get_db)],
 ) -> Token:  # 第一引数がクラスの場合Dependsの引数を省略可能
+    print("username(email):", form_data.username)
+    print("password:", form_data.password)
+    print("grant_type:", form_data.grant_type)
+
     user = authenticate_user_by_email(
         email=form_data.username,
         password=form_data.password,
         db=db,
     )
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    logger.debug("ユーザーの存在確認完了")
+
     if user.disabled:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -73,3 +81,10 @@ def login_for_access_token(
     )
 
     return Token(access_token=access_token, token_type="bearer")
+
+
+@router.get("/me/items/", response_model=user_schema.UserResponse)
+async def read_own_items(
+    current_user: Annotated[users.User, Depends(security.get_current_active_user)],
+):
+    return current_user

@@ -1,6 +1,5 @@
 import logging
 
-import yaml
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -12,10 +11,6 @@ from cha2hatena import DeepseekClient, LlmConfig, blog_post, json_loader
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-
-with open("config.yaml", encoding="utf-8") as f:
-    config_dict = yaml.safe_load(f)
-
 
 templates = Jinja2Templates(directory="app/templates")
 
@@ -41,3 +36,4 @@ async def generate(
     )
 
     return hatena_response
+

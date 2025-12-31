@@ -44,6 +44,7 @@ def create_user(user_input: user_schema.UserCreate, db: Session) -> User:
     """ユーザアカウント作成"""
     # パスワードをハッシュ化
     hashed = get_password_hash(user_input.password)
+    # username入力をemailとして受け取り
     new_user = User(email=user_input.email, hashed_password=hashed)
     db.add(new_user)
     db.commit()

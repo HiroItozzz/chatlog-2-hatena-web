@@ -1,20 +1,59 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>新規登録画面</title>
-</head>
-<body>
+  </head>
+  <body>
     <h2>新規登録</h2>
-    <form action="{{ url_for('register') }}" method="post">
-        <label for="username">ユーザー名:</label><br>
-        <input type="text" id="username" name="username"><br>
-        <label for="password">パスワード:</label><br>
-        <input type="password" id="password" name="password"><br><br>
-        <input type="submit" value="登録">
+    <form id="registerForm">
+      <label for="email">メールアドレス:</label><br />
+      <input type="text" id="username" name="email" /><br />
+      <label for="password">パスワード:</label><br />
+      <input type="password" id="password" name="password" /><br /><br />
+      <button type="submit">登録</button>
     </form>
-    <br>
-    <a href="{{ url_for('home') }}">ログインはこちら</a>
-</body>
+    <br />
+    <a href="http://localhost:8080/users/login">ログインはこちら</a>
+
+    <script>
+      document
+        .getElementById("registerForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const email = document.getElementById("email").value;
+          const password = document.getElementById("password").value;
+
+          try {
+            const response = await fetch(
+              "http://localhost:8080/auth/register",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  email: email,
+                  password: password,
+                }),
+              }
+            );
+
+            if (!response.ok) {
+              const error = await response.json();
+              throw new Error(error.detail || "Registration failed");
+            }
+
+            const data = await response.json();
+            alert("登録成功");
+            window.location.href = "/";
+          } catch (error) {
+            console.error("Registration failed:", error);
+            alert(error.message);
+          }
+        });
+    </script>
+  </body>
 </html>
