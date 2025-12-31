@@ -36,4 +36,3 @@ async def generate(
     )
 
     return hatena_response
-
